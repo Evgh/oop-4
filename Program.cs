@@ -12,7 +12,6 @@ namespace oop_4
         {
             _data = new List<int?> { };
         }
-
         internal int? this[int i]
         {
             get
@@ -23,6 +22,11 @@ namespace oop_4
                 return _data[i];
             }
         }
+        internal int Length
+        {
+            get { return _data.Count; }
+        }
+
 
         public static bool operator | (Set set, int? element) // проверка на принадлежность элемента
         {
@@ -86,9 +90,9 @@ namespace oop_4
         }
     }
 
-    public static class MyStringExtension
+    internal static class MyExtensions
     {
-        public static string FindShortest(this string str, char symb = ' ')
+        internal static string FindShortest(this string str, char symb = ' ')
         {
             string[] words = str.Split(symb);
 
@@ -102,6 +106,18 @@ namespace oop_4
             }
             return words[shortest];
         }
+
+        internal static bool isOrdered(this Set set)
+        {
+            for (int i = 1; i < set.Length; i++)
+            {
+                if (!(set[i] > set[i - 1]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     } 
 
     class Program
@@ -111,9 +127,11 @@ namespace oop_4
             Console.WriteLine("Hello World!");
             Set a = new Set();
 
-            String ss = "zbub_Anton_L";
+            bool n = a << 1;
+            n = a << 2;
+            n = a << 3;
 
-            Console.WriteLine(ss.FindShortest(' '));
+            Console.WriteLine(a.isOrdered());
         }
     }
 }
