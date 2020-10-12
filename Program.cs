@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace oop_4
 {
@@ -85,6 +86,24 @@ namespace oop_4
         }
     }
 
+    public static class MyStringExtension
+    {
+        public static string FindShortest(this string str, char symb = ' ')
+        {
+            string[] words = str.Split(symb);
+
+            int shortest = 0;
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Length < words[shortest].Length)
+                {
+                    shortest = i;
+                }
+            }
+            return words[shortest];
+        }
+    } 
+
     class Program
     {
         static void Main(string[] args)
@@ -92,9 +111,9 @@ namespace oop_4
             Console.WriteLine("Hello World!");
             Set a = new Set();
 
+            String ss = "zbub_Anton_L";
 
-
-            Console.WriteLine(2 << 1);
+            Console.WriteLine(ss.FindShortest(' '));
         }
     }
 }
