@@ -4,14 +4,69 @@ using System.Text;
 
 namespace oop_4
 {
+    internal class Owner
+    {
+        internal Owner() : this(null, null, null) {}
+        internal Owner(string id, string name, string org)
+        {
+            Id = id;
+            Name = name;
+            Org = org;
+        }
+
+        internal string Id { get; set; }
+        internal string Name { get; set; }
+        internal string Org { get; set; }
+    }
+
+    internal class Date
+    {
+        int _mounth;
+        int _day;
+        internal int Year { get; set; }
+        internal int Mounth {
+            get
+            {
+                return _mounth;
+            }
+            set
+            {
+                _mounth = value > 0 && value < 13 ? value : DateTime.Now.Month; 
+            } 
+        }
+        internal int Day
+        {
+            get
+            {
+                return _day;
+            }
+            set
+            {
+                _day = value > 0 && value < 32 ? value : DateTime.Now.Day;
+            }
+        }
+
+        internal Date() : this(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) { }
+        internal Date(int year, int mounth, int day) {
+            Year = year;
+            Mounth = mounth;
+            Day = day;
+        }
+    }
+
     internal class Set
     {
         List<int?> _data;
+        Date _date;
+        Owner _owner;
 
         internal Set()
         {
             _data = new List<int?> { };
+            _date = new Date();
+            _owner = new Owner();
         }
+
         internal int? this[int i]
         {
             get
