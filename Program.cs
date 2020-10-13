@@ -6,7 +6,7 @@ namespace oop_4
 {
     internal class Owner
     {
-        internal Owner() : this(null, null, null) {}
+        internal Owner() : this("Default_Id", "Default_Name", "Default_Org") {}
         internal Owner(string id, string name, string org)
         {
             Id = id;
@@ -67,6 +67,13 @@ namespace oop_4
             _owner = new Owner();
         }
 
+        internal Set(Date date, Owner owner)
+        {
+            _data = new List<int?> { };
+            _owner = owner;
+            _date = date;
+        }
+
         internal int? this[int i]
         {
             get
@@ -85,11 +92,6 @@ namespace oop_4
 
         public static bool operator | (Set set, int? element) // проверка на принадлежность элемента
         {
-/*            foreach (int? item in set._data)
-            {
-                if (!item.Equals(element))
-                    return false;
-            }*/
             return set._data.Contains(element);
         }
    
@@ -145,8 +147,33 @@ namespace oop_4
         }
     }
 
-    internal static class MyExtensions
+    internal static class StatisticOperation
     {
+        internal static bool isOrdered(this Set set) // упорядочены ли элементы множества
+        {
+            for (int i = 1; i < set.Length; i++)
+            {
+                if (!(set[i] > set[i - 1]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        internal static int? CountSum(this Set set)
+        {
+            int? sum = 0;
+
+            for (int i = 0; i < set.Length; i++)
+            {
+                sum += set[i] ?? 0;
+            }
+
+            return sum;
+        }
+
+
         internal static string FindShortest(this string str, char symb = ' ')
         {
             string[] words = str.Split(symb);
@@ -161,18 +188,6 @@ namespace oop_4
             }
             return words[shortest];
         }
-
-        internal static bool isOrdered(this Set set)
-        {
-            for (int i = 1; i < set.Length; i++)
-            {
-                if (!(set[i] > set[i - 1]))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
     } 
 
     class Program
@@ -186,7 +201,11 @@ namespace oop_4
             n = a << 2;
             n = a << 3;
 
-            Console.WriteLine(a.isOrdered());
+
+            int? z = 2, y = 1;
+      
+
+            Console.WriteLine(a.CountSum());
         }
     }
 }
