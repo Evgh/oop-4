@@ -6,20 +6,24 @@ namespace oop_4
 {
     internal class Owner
     {
-        internal Owner() : this("Default_Id", "Default_Name", "Default_Org") {}
+        internal Owner() : this("default_Id", "default_Name", "default_Org") {}
         internal Owner(string id, string name, string org)
         {
             Id = id;
             Name = name;
             Org = org;
         }
-
         internal string Id { get; set; }
         internal string Name { get; set; }
         internal string Org { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Id} / {Name} / {Org}";
+        }
     }
 
-    internal class Date
+    internal class MyDate
     {
         int _mounth;
         int _day;
@@ -46,30 +50,37 @@ namespace oop_4
             }
         }
 
-        internal Date() : this(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) { }
-        internal Date(int year, int mounth, int day) {
+        internal MyDate() : this(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) { }
+        internal MyDate(int year, int mounth, int day) {
             Year = year;
             Mounth = mounth;
             Day = day;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder buff = new StringBuilder();
+            buff.Append($"{Day}.{Mounth}.{Year}");
+            return buff.ToString();
         }
     }
 
     internal class Set
     {
-        List<int?> _data;
-        Date _date;
+        List<int> _data;
+        MyDate _date;
         Owner _owner;
 
         internal Set()
         {
-            _data = new List<int?> { };
-            _date = new Date();
+            _data = new List<int> { };
+            _date = new MyDate();
             _owner = new Owner();
         }
 
-        internal Set(Date date, Owner owner)
+        internal Set(MyDate date, Owner owner)
         {
-            _data = new List<int?> { };
+            _data = new List<int> { };
             _owner = owner;
             _date = date;
         }
@@ -89,13 +100,12 @@ namespace oop_4
             get { return _data.Count; }
         }
 
-
-        public static bool operator | (Set set, int? element) // проверка на принадлежность элемента
+        public static bool operator | (Set set, int element) // проверка на принадлежность элемента
         {
             return set._data.Contains(element);
         }
    
-        public  static bool operator << (Set set, int? element) // добавление в множество
+        public  static bool operator << (Set set, int element) // добавление в множество
         {
             if (set | element)
                 return false;
@@ -104,49 +114,76 @@ namespace oop_4
             return true;
         }
 
-        public static bool operator >> (Set set, int? element) // удаление из множества
+        public static bool operator >> (Set set, int element) // удаление из множества
         {
             return set._data.Remove(element);
         }
 
-        public static bool operator > (Set set1, Set set2)
+        public static bool operator > (Set set1, Set set2) // Является второе подмножеством первого
         {
             for (int i = 0; i < set2._data.Count; i++)
             {
-                if (!(set1 | set2[i]))
+                if (!(set1 | (int)set2[i]))
                     return false;     
             }
             return true;
         }
 
-        public static bool operator < (Set set1, Set set2)
+        public static bool operator < (Set set1, Set set2) // является ли первое подмножеством второго
         {
-            return false;
+            return set2 > set1;
         }
 
-        public static bool operator != (Set set1, Set set2)
-        {
-            return !set1._data.Equals(set2._data);
-        }
-
-        public static bool operator == (Set set1, Set set2)
-        {
-            return set1._data.Equals(set2._data);
-        }
-
-        public static Set operator % (Set set1, Set set2)
+        public static Set operator %(Set set1, Set set2) // Пересечение
         {
             Set buff = new Set();
             for (int i = 0; i < set1._data.Count; i++)
             {
-                bool kostyl; 
-                if (set2 | set1[i])
-                    kostyl = buff << set1[i];
+                bool kostyl;
+                if (set2 | (int)set1[i])
+                    if (!(buff << (int)set1[i])) // засунула вставку элемента в if, потому что иначе оно не работает, а так пусть хоть проверка будет
+                        break;
             }
             return buff;
         }
-    }
 
+        public static bool operator != (Set set1, Set set2)
+        {
+            return !set1.Equals(set2);
+        }
+
+        public static bool operator == (Set set1, Set set2)
+        {
+            return set1.Equals(set2);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 0;
+            for(int i = 0; i < Length; i++)
+            {
+                hash += (int)(Math.Pow((double)this[i], i));
+            }
+            return hash;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return GetHashCode() == obj.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            StringBuilder buff = new StringBuilder();
+            for (int i = 0; i < Length; i++)
+            {
+                buff.Append(this[i] + " ");
+            }
+            buff.Append($"| дата создания: {_date.ToString() } | владелец: {_owner.ToString()} ");
+            return buff.ToString();
+        }
+    }
+    
     internal static class StatisticOperation
     {
         internal static bool isOrdered(this Set set) // упорядочены ли элементы множества
@@ -161,19 +198,34 @@ namespace oop_4
             return true;
         }
 
-        internal static int? CountSum(this Set set)
+        internal static int CountSum(this Set set) // сумма элементов
         {
-            int? sum = 0;
-
+            int sum = 0;
             for (int i = 0; i < set.Length; i++)
             {
-                sum += set[i] ?? 0;
+                sum += (int)set[i];
             }
-
             return sum;
         }
 
+        internal static int MaxMin(this Set set) // разница между максимальным и минимальным
+        {
+            int max = 0, min = 0;
+            for(int i = 0; i < set.Length; i++)
+            {
+                max = set[i] > set[max] ? i : max;
+                min = set[i] < set[min] ? i : min;
+            }
+            return (int)(set[max] - set[min]);
+        }
 
+        internal static int getLen(this Set set) // мне действительно нужно это сделать? Ну ладно, я девочка хорошая, раз сказано в задании - сделаю
+        {
+            return set.Length;
+        }
+
+
+        //////////////////////////////////////////////
         internal static string FindShortest(this string str, char symb = ' ')
         {
             string[] words = str.Split(symb);
@@ -194,18 +246,38 @@ namespace oop_4
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            Set a = new Set();
+            Owner anton = new Owner("19102001", "Евгений", "Shalom Contracts");
+            MyDate day = new MyDate(2019, 09, 15);
+            Set first = new Set(day, anton);
+            if (first << 2) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (first << 2) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (first << 3) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (first << 4) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (first << 5) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (first << 6) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            Console.WriteLine("Первое множество: " + first.ToString());
+            Console.WriteLine("Оно упорядочено? " + first.isOrdered());
+            Console.WriteLine("Cумма его элементов: " + first.CountSum());
+            Console.WriteLine("Максимальный элемент минус минимальный: " + first.MaxMin());
+            Console.WriteLine("Количество его элементов: " + first.getLen());
+            if (first >> 6) { Console.WriteLine("Удален элемент 6"); } else { Console.WriteLine("Элемент 6 не удален"); }
+            if (first >> 56) { Console.WriteLine("Удален элемент 56"); } else { Console.WriteLine("Элемент 56 не удален"); }
 
-            bool n = a << 1;
-            n = a << 2;
-            n = a << 3;
+            Set second = new Set();
+            if (second << 10) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (second << 2) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (second << 56) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (second << 5) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            if (second << 6) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
+            Console.WriteLine("Второе множество: " + second.ToString());
+            Console.WriteLine("Оно упорядочено? " + second.isOrdered());
+            Console.WriteLine("Содержится ли второе множество в первом? " + (second < first));
 
-
-            int? z = 2, y = 1;
-      
-
-            Console.WriteLine(a.CountSum());
+            Set third = first % second;
+            Console.WriteLine("Третье множество -- пересечение первых двух: " + third.ToString());
+            Console.WriteLine("Содержится ли пересечение двух множеств в первом? " + (third < first));
+            Console.WriteLine("Равняется ли пересечение двух множеств третьему множеству? " + (third == first%second));
+            Console.WriteLine("Верно ли, что третье множество не равняется первому? " + (third != first));           
         }
     }
 }
