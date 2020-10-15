@@ -1,88 +1,94 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace oop_4
 {
-    internal class Owner
-    {
-        internal Owner() : this("default_Id", "default_Name", "default_Org") {}
-        internal Owner(string id, string name, string org)
-        {
-            Id = id;
-            Name = name;
-            Org = org;
-        }
-        internal string Id { get; set; }
-        internal string Name { get; set; }
-        internal string Org { get; set; }
-
-        public override string ToString()
-        {
-            return $"{Id} / {Name} / {Org}";
-        }
-    }
-
-    internal class MyDate
-    {
-        int _mounth;
-        int _day;
-        internal int Year { get; set; }
-        internal int Mounth {
-            get
-            {
-                return _mounth;
-            }
-            set
-            {
-                _mounth = value > 0 && value < 13 ? value : DateTime.Now.Month; 
-            } 
-        }
-        internal int Day
-        {
-            get
-            {
-                return _day;
-            }
-            set
-            {
-                _day = value > 0 && value < 32 ? value : DateTime.Now.Day;
-            }
-        }
-
-        internal MyDate() : this(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) { }
-        internal MyDate(int year, int mounth, int day) {
-            Year = year;
-            Mounth = mounth;
-            Day = day;
-        }
-
-        public override string ToString()
-        {
-            StringBuilder buff = new StringBuilder();
-            buff.Append($"{Day}.{Mounth}.{Year}");
-            return buff.ToString();
-        }
-    }
+    
 
     internal class Set
     {
+        internal class Owner
+        {
+            internal Owner() : this("default_Id", "default_Name", "default_Org") { }
+            internal Owner(string id, string name, string org)
+            {
+                Id = id;
+                Name = name;
+                Org = org;
+            }
+            internal string Id { get; set; }
+            internal string Name { get; set; }
+            internal string Org { get; set; }
+            public override string ToString()
+            {
+                return $"{Id} / {Name} / {Org}";
+            }
+        }
+        internal class MyDate
+        {
+            int _mounth;
+            int _day;
+            internal int Year { get; set; }
+            internal int Mounth
+            {
+                get
+                {
+                    return _mounth;
+                }
+                set
+                {
+                    _mounth = value > 0 && value < 13 ? value : DateTime.Now.Month;
+                }
+            }
+            internal int Day
+            {
+                get
+                {
+                    return _day;
+                }
+                set
+                {
+                    _day = value > 0 && value < 32 ? value : DateTime.Now.Day;
+                }
+            }
+            internal MyDate() : this(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) { }
+            internal MyDate(int year, int mounth, int day)
+            {
+                Year = year;
+                Mounth = mounth;
+                Day = day;
+            }
+            public override string ToString()
+            {
+                StringBuilder buff = new StringBuilder();
+                buff.Append($"{Day}.{Mounth}.{Year}");
+                return buff.ToString();
+            }
+        }
+
         List<int> _data;
-        MyDate _date;
-        Owner _owner;
+        internal MyDate Day { get; set; }
+        internal Owner SetOwner { get; set; }
+
+        internal int Length
+        {
+            get { return _data.Count; }
+        }
 
         internal Set()
         {
             _data = new List<int> { };
-            _date = new MyDate();
-            _owner = new Owner();
+            Day = new MyDate();
+            SetOwner = new Owner();
         }
 
-        internal Set(MyDate date, Owner owner)
+        internal Set(MyDate date, Owner set_owner)
         {
             _data = new List<int> { };
-            _owner = owner;
-            _date = date;
+            SetOwner = set_owner;
+            Day = date;
         }
 
         internal int? this[int i]
@@ -94,10 +100,6 @@ namespace oop_4
 
                 return _data[i];
             }
-        }
-        internal int Length
-        {
-            get { return _data.Count; }
         }
 
         public static bool operator | (Set set, int element) // проверка на принадлежность элемента
@@ -179,23 +181,38 @@ namespace oop_4
             {
                 buff.Append(this[i] + " ");
             }
-            buff.Append($"| дата создания: {_date.ToString() } | владелец: {_owner.ToString()} ");
+            buff.Append($"| дата создания: {Day.ToString() } | владелец: {SetOwner.ToString()} ");
             return buff.ToString();
         }
     }
     
     internal static class StatisticOperation
     {
-        internal static bool isOrdered(this Set set) // упорядочены ли элементы множества
+        internal static Set OrderBy(this Set set) // упорядочивание элементов
         {
-            for (int i = 1; i < set.Length; i++)
+            Set ordered = new Set(set.Day, set.SetOwner);
+
+
+            for (int i = 0; i < set.Length; i++)
             {
-                if (!(set[i] > set[i - 1]))
-                {
-                    return false;
-                }
+                if (!(ordered << (int)set[i])) { Console.WriteLine("Вставка не удалась"); }
             }
-            return true;
+
+            for (int i = 0; i < set.Length; i++)
+            {
+                // найти минимальное
+                // засунуть минимальное в буферное множество
+                // найти минимальное среди всех, не считая последнюю позицию                
+                int min = 0;
+                for (int j = 0; j < ordered.Length - i; j++)
+                {
+                    min = ordered[j] < ordered[min] ? j : min;
+                }
+                int buff = (int)ordered[min];
+                if (!(ordered >> buff)) { Console.WriteLine("Удаление не удалось"); }
+                if (!(ordered << buff)) { Console.WriteLine("Вставка не удалась"); }
+            }
+            return ordered;
         }
 
         internal static int CountSum(this Set set) // сумма элементов
@@ -224,7 +241,6 @@ namespace oop_4
             return set.Length;
         }
 
-
         //////////////////////////////////////////////
         internal static string FindShortest(this string str, char symb = ' ')
         {
@@ -246,8 +262,8 @@ namespace oop_4
     {
         static void Main(string[] args)
         {
-            Owner anton = new Owner("19102001", "Евгений", "Shalom Contracts");
-            MyDate day = new MyDate(2019, 09, 15);
+            Set.Owner anton = new Set.Owner("19102001", "Евгений", "Shalom Contracts");
+            Set.MyDate day = new Set.MyDate(2019, 09, 15);
             Set first = new Set(day, anton);
             if (first << 2) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
             if (first << 2) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
@@ -256,7 +272,7 @@ namespace oop_4
             if (first << 5) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
             if (first << 6) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
             Console.WriteLine("Первое множество: " + first.ToString());
-            Console.WriteLine("Оно упорядочено? " + first.isOrdered());
+            Console.WriteLine("Упорядоченный вариант: " + (first.OrderBy()).ToString());
             Console.WriteLine("Cумма его элементов: " + first.CountSum());
             Console.WriteLine("Максимальный элемент минус минимальный: " + first.MaxMin());
             Console.WriteLine("Количество его элементов: " + first.getLen());
@@ -270,7 +286,7 @@ namespace oop_4
             if (second << 5) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
             if (second << 6) { Console.WriteLine("Вставка удалась"); } else { Console.WriteLine("Не вставлено"); }
             Console.WriteLine("Второе множество: " + second.ToString());
-            Console.WriteLine("Оно упорядочено? " + second.isOrdered());
+            Console.WriteLine("Упорядоченный вариант: " + (second.OrderBy()).ToString());
             Console.WriteLine("Содержится ли второе множество в первом? " + (second < first));
 
             Set third = first % second;
